@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\include;C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\lib-vc2019;C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\include;C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\lib-vc2019;C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\include;C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\lib-vc2019;C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\include;C:\Users\Оля\source\repos\graph\graph\ext\glm;C:\Users\Оля\source\repos\graph\graph\ext\glew\include;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\include;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Оля\source\repos\graph\graph\ext\glfw\lib-vc2019;C:\Users\Оля\source\repos\graph\graph\ext\glew\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeimage\lib;C:\Users\Оля\source\repos\graph\graph\ext\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,7 +100,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,7 +117,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,7 +147,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
