@@ -53,6 +53,13 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
     // vertex shader
     const char* vertexShaderStr =
         "#version 330 core\n"
@@ -81,7 +88,7 @@ int main()
         "#version 330 core\n"
         "out vec4 color;\n"
         "void main(){ \n"
-        "color = vec4(1.0f, 0.5f, 0.2f, 1.0f); \n}";
+        "color = vec4(1.0f, 0.0f, 0.5f, 1.0f); \n}";
 
     // build
     GLuint fragmentShader;
@@ -118,10 +125,14 @@ int main()
         // check events
         glfwPollEvents();
 
-        glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // drow here
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
 
         
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
