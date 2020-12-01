@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "Shader.h"
+
 static void glfwError(int id, const char* description)
 {
     std::cout << description << std::endl;
