@@ -5,6 +5,41 @@
 
 #include "Shader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+GLuint loadTexture(char const* path) {
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    stbi_uc* data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data) {
+        GLenum format;
+        switch (nrComponents) {
+        case 1: format = GL_RED; break;
+        case 3: format = GL_RGB; break;
+        case 4: format = GL_RGBA; break;
+        default: format = 0;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    }
+    else std::cout << "Failed to load texture:" << std::endl << path << std::endl;
+
+    stbi_image_free(data);
+
+    return textureID;
+}
+
 static void glfwError(int id, const char* description)
 {
     std::cout << description << std::endl;
@@ -42,6 +77,17 @@ int main()
     glViewport(0, 0, width, height);
 
 
+    /***************** TEXTURE *********************/
+    /*
+    GLuint texturePizza = loadTexture("textures/pizza.jpeg");
+    GLfloat vertices_tex[] = {
+        // Позиции          // Цвета             // Текстурные координаты
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Верхний правый
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Нижний правый
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Нижний левый
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Верхний левый
+    };
+    */
     /************* TRIANGLE ***************/
     // vertex data
     GLfloat vertices[] = {
@@ -66,11 +112,13 @@ int main()
 
     /***************** SQUARE *********************/
 
+    GLuint textureWow = loadTexture("textures/wow.jpg");
     GLfloat square_vert[] = {
-     0.5f,  0.5f, 0.0f,  // Верхний правый угол
-     0.5f, -0.5f, 0.0f,  // Нижний правый угол
-    -0.5f, -0.5f, 0.0f,  // Нижний левый угол
-    -0.5f,  0.5f, 0.0f   // Верхний левый угол
+        // Позиции          // Цвета             // Текстурные координаты
+            0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Верхний правый
+            0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Нижний правый
+           -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Нижний левый
+           -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Верхний левый
     };
 
     GLuint indices[] = {  
@@ -90,14 +138,21 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+    // TexCoord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
 
     glBindVertexArray(0);
 
-    Shader Square = Shader("shaders/square.vs.txt", "shaders/triangle.fs.txt");
+    Shader Square = Shader("shaders/square.vs.txt", "shaders/square.fs");
 
     /****************** PLAY CYCLE ********************/
 
@@ -117,7 +172,11 @@ int main()
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
+        glBindTexture(GL_TEXTURE_2D, textureWow);
         Square.Use();
+        //glBindVertexArray(VAO_square);
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        //glBindVertexArray(0);
         glBindVertexArray(VAO_square);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
