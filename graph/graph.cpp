@@ -3,6 +3,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "Shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -76,6 +80,15 @@ int main()
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
+    /***********************************************/
+    glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+    std::cout << vec.x << vec.y << vec.z << std::endl;
+    glm::mat4 trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
+    vec = trans * vec;
+    std::cout << vec.x << vec.y << vec.z << std::endl;
+
+
 
     /***************** TEXTURE *********************/
     /*
@@ -108,7 +121,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    Shader Triangle = Shader("shaders/triangle.vs.txt", "shaders/triangle.fs.txt");
+    Shader Triangle = Shader("shaders/triangle.vs", "shaders/triangle.fs");
 
     /***************** SQUARE *********************/
 
@@ -152,7 +165,8 @@ int main()
 
     glBindVertexArray(0);
 
-    Shader Square = Shader("shaders/square.vs.txt", "shaders/square.fs");
+    Shader Square = Shader("shaders/square.vs", "shaders/square.fs");
+
 
     /****************** PLAY CYCLE ********************/
 
@@ -172,11 +186,23 @@ int main()
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
+        //glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureWow);
+        //glUniform1i(glGetUniformLocation(Square.Program, "ourTexture"), 0);
+
         Square.Use();
-        //glBindVertexArray(VAO_square);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        //glBindVertexArray(0);
+
+        /******************** TRANSFORM ************************/
+        glm::mat4 transform = glm::mat4(1.0f);
+        //transform = glm::translate(transform, glm::vec3(1.0f, 1.0f, 0.0f));
+        //transform = glm::rotate(transform, 90.0f, glm::vec3(0.0, 0.0, 1.0));
+        transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
+        transform = glm::rotate(transform, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // Get matrix's uniform location and set matrix
+        GLint transformLoc = glGetUniformLocation(Square.Program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
         glBindVertexArray(VAO_square);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

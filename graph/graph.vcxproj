@@ -157,8 +157,10 @@
     <ClInclude Include="Shader.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="shaders\triangle.fs.txt" />
-    <Text Include="shaders\triangle.vs.txt" />
+    <None Include="shaders\square.fs" />
+    <None Include="shaders\square.vs" />
+    <None Include="shaders\triangle.fs" />
+    <None Include="shaders\triangle.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

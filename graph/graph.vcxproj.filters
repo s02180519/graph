@@ -25,7 +25,17 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="shaders\triangle.fs.txt" />
-    <Text Include="shaders\triangle.vs.txt" />
+    <None Include="shaders\square.fs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="shaders\square.vs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="shaders\triangle.fs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="shaders\triangle.vs">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
   </ItemGroup>
 </Project>
