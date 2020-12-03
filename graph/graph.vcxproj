@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="graph.cpp" />
     <ClCompile Include="learn1_murcube.cpp" />
+    <ClCompile Include="learn_coals.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
