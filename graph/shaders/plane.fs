@@ -9,4 +9,5 @@ uniform vec3 ourColor;
 void main()
 {
     color = texture(ourTexture, TexCoord);
+    //if(color.a<1)discard;
 }

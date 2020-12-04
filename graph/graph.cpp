@@ -11,6 +11,7 @@
 #include "Camera.h"
 
 #include <vector>
+#include <map>
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -203,6 +204,27 @@ std::vector<glm::vec3> billboards = {
         glm::vec3(-2.0f, 1.0f, -4.0f),
         glm::vec3(-3.0f, 1.0f, -4.0f)
 };
+
+float transparentVertices[] = {
+    // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+    0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+    0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+    1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+    0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+    1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+    1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+};
+
+std::vector<glm::vec3> windows
+{
+    glm::vec3(-1.5f, 2.0f, -0.48f),
+    glm::vec3(1.5f, 2.0f, 0.51f),
+    glm::vec3(0.0f, 2.0f, 0.7f),
+    glm::vec3(-0.3f, 2.0f, -2.3f),
+    glm::vec3(0.5f, 2.0f, -0.6f)
+};
+
 
 GLuint loadTexture(char const* path) {
     GLuint textureID;
@@ -444,6 +466,22 @@ int main()
 
     GLuint billboardTexture = loadTexture("textures/amongus_red.png");
 
+    // transparent VAO
+    unsigned int transparentVAO, transparentVBO;
+    glGenVertexArrays(1, &transparentVAO);
+    glGenBuffers(1, &transparentVBO);
+    glBindVertexArray(transparentVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
+
+    Shader Glass("shaders/glass.vs", "shaders/glass.fs");
+    unsigned int transparentTexture = loadTexture("textures/blue.png");
+
     glEnable(GL_DEPTH_TEST);
     /****************** PLAY CYCLE ********************/
 
@@ -461,8 +499,8 @@ int main()
         Do_Movement();
 
 
-        glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 view = glm::mat4(20.0f);
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -580,6 +618,7 @@ int main()
 
 
         // billboard
+        view = camera.GetViewMatrix();
         glBindTexture(GL_TEXTURE_2D, billboardTexture);
         glUniform1i(glGetUniformLocation(Billboard.Program, "ourTexture"), 1);
         Billboard.Use();
@@ -612,11 +651,40 @@ int main()
         }
         glBindVertexArray(0);
         
-        
-        //billboardShader.set("cameraRight", camRight);
-        //billboardShader.set("cameraUp", camUp);
+        view = camera.GetViewMatrix();
 
-       
+        // windows
+        std::map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < windows.size(); i++)
+        {
+            float distance = glm::length(camera.Position - windows[i]);
+            sorted[distance] = windows[i];
+        }
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        Glass.setInt("texture1", 0);
+        Glass.Use();
+        //glUniform1i(glGetUniformLocation(Billboard.Program, "ourTexture"), 1);
+        //glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        //Glass.setInt("texture1", 1);
+        Glass.setMat4("view", view);
+        Glass.setMat4("projection", projection);
+        //model = glm::mat4(1.0f);
+        Glass.setMat4("model", model);
+        glBindVertexArray(transparentVAO);
+        //glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        
+        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, it->second);
+            Glass.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        
+        glBindVertexArray(0);
         //gluSphere()
         
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
@@ -632,6 +700,12 @@ int main()
     glDeleteBuffers(1, &cubeVBO);
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
+    glDeleteVertexArrays(1, &skyboxVAO);
+    glDeleteBuffers(1, &skyboxVBO);
+    glDeleteVertexArrays(1, &transparentVAO);
+    glDeleteBuffers(1, &transparentVBO);
+    glDeleteVertexArrays(1, &billboardVAO);
+    glDeleteBuffers(1, &billboardVBO);
     glfwTerminate();
     return 0;
 }
