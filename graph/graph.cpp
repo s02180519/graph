@@ -188,6 +188,22 @@ float skyboxVertices[] = {
      1.0f, -1.0f,  1.0f
 };
 
+GLfloat billboardVertices[] = {
+     -1, -1, 0,   0, 1,
+      1, -1, 0,   1, 1,
+     -1,  1, 0,   0, 0,
+      1, -1, 0,   1, 1,
+      1,  1, 0,   1, 0,
+     -1,  1, 0,   0, 0
+};
+
+std::vector<glm::vec3> billboards = {
+        glm::vec3(-1.0f, 1.0f, -4.0f),
+        //glm::vec3(-1.0f, 0.5f, -4.0f),
+        glm::vec3(-2.0f, 1.0f, -4.0f),
+        glm::vec3(-3.0f, 1.0f, -4.0f)
+};
+
 GLuint loadTexture(char const* path) {
     GLuint textureID;
     glGenTextures(1, &textureID);
@@ -395,6 +411,8 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
+    glBindVertexArray(0);
     Shader Skybox("shaders/skybox.vs", "shaders/skybox.fs");
 
     std::vector<std::string> faces
@@ -407,6 +425,24 @@ int main()
         "textures/ArstaBridge/negz.jpg"
     };
     GLuint cubemapTexture = loadCubemap(faces);
+
+    /**************** BILLBOARD *******************/
+    GLuint billboardVAO, billboardVBO;
+
+    glGenVertexArrays(1, &billboardVAO);
+    glGenBuffers(1, &billboardVBO);
+    glBindVertexArray(billboardVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, billboardVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(billboardVertices), &billboardVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
+    glBindVertexArray(0);
+    Shader Billboard("shaders/billboard.vs", "shaders/billboard.fs");
+
+    GLuint billboardTexture = loadTexture("textures/amongus_red.png");
 
     glEnable(GL_DEPTH_TEST);
     /****************** PLAY CYCLE ********************/
@@ -541,6 +577,45 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
+
+
+        // billboard
+        glBindTexture(GL_TEXTURE_2D, billboardTexture);
+        glUniform1i(glGetUniformLocation(Billboard.Program, "ourTexture"), 1);
+        Billboard.Use();
+        glUniform1f(glGetUniformLocation(Billboard.Program, "size"), 0.4f);
+        
+        
+        for (int i = 0, n = billboards.size(); i + 1 < n; i++) {
+            for (int j = i; j < n; j++) {
+                glm::vec3 delta1 = billboards[i] - camera.Position;
+                glm::vec3 delta2 = billboards[j] - camera.Position;
+                if (dot(delta1, delta1) < dot(delta2, delta2)) {
+                    glm::vec3 tmp = billboards[i];
+                    billboards[i] = billboards[j];
+                    billboards[j] = tmp;
+                }
+            }
+        }
+       
+        glm::mat4 PV = projection * view;
+
+        Billboard.setMat4("PVM", PV);
+        Billboard.setVec3("cameraRight", camera.Right);
+        Billboard.setVec3("cameraUp", camera.Up);
+        glBindVertexArray(billboardVAO);
+
+        // draw billboards
+        for (int i = 0, n = billboards.size(); i < n; i++) {
+            Billboard.setVec3("billboardPos", billboards[i]);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        glBindVertexArray(0);
+        
+        
+        //billboardShader.set("cameraRight", camRight);
+        //billboardShader.set("cameraUp", camUp);
+
        
         //gluSphere()
         
