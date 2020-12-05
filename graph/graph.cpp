@@ -785,10 +785,11 @@ int main()
         glfwSetErrorCallback(&glfwError);
         glfwInit();
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+       // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+       // glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
         GLFWwindow* window = glfwCreateWindow(width, height, "kek", NULL, NULL);
         if (window == NULL)
@@ -818,73 +819,33 @@ int main()
         */
         //glPointSize(100);
 
-        
-
-
-        GLfloat vertices[] = {
-                0.0f, 0.0f, 0.0f
-        };
-
-        GLuint VBO;
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         while (!glfwWindowShouldClose(window))     // play cycle
         {
-            // check events
-            glfwPollEvents();
-
+            //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            //glMatrixMode(GL_MODELVIEW);
-            //glLoadIdentity();
 
-            //glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-            glEnableVertexAttribArray(0);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
 
-            glDrawArrays(GL_POINTS, 0, 1);
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
 
-            glDisableVertexAttribArray(0);
-            // drow here
-            /*
-            glPointSize(100);
-            glBegin(GL_POINTS);
-            glColor3d(1, 1, 1);
-            glVertex3d(0, 0, 4); // первая точка
-            glColor3d(0, 1, 0);
-            glVertex3d(-4, 4, 0);   // вторая точка
-            glColor3d(0, 0, 1);     // третья
-            glVertex3d(-3.5, 4, 0);
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glBegin(GL_POLYGON);
+            glVertex3f(0.0, 0.0, 0.0);
+            glVertex3f(0.5, 0.0, 0.0);
+            glVertex3f(0.5, 0.5, 0.0);
+            glVertex3f(0.0, 0.5, 0.0);
             glEnd();
-            glPointSize(5);
-            glBegin(GL_POINTS);
-            glColor3d(1, 0, 0);
-            glVertex3d(-2, 4, 0); // первая точка
-            glColor3d(0, 1, 0);
-            glVertex3d(-1, 4, 0);   // вторая точка
-            glColor3d(0, 0, 1);     // третье
-            glVertex3d(0, 4, 0);
-            glEnd();
-            glPointSize(10);
-            glEnable(GL_POINT_SMOOTH);
-            glBegin(GL_POINTS);
-            glColor3d(1, 0, 0);
-            glVertex3d(2, 4, 0); // первая точка
-            glColor3d(0, 1, 0);
-            glVertex3d(3, 4, 0);   // вторая точка
-            glColor3d(0, 0, 1);     // третья
-            glVertex3d(4, 4, 0);
-            glEnd();
-            glDisable(GL_POINT_SMOOTH);
-            */
-            // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
-            // then swap buffers
+
             glfwSwapBuffers(window);
+
+            glfwPollEvents();
         }
-        glDeleteBuffers(1, &VBO);
+        //glDeleteBuffers(1, &VBO);
         glfwTerminate();
         return 0;
 
