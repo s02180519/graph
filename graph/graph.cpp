@@ -1,4 +1,5 @@
-﻿#define GLEW_STATIC
+﻿/*
+#define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -13,7 +14,7 @@
 #include <vector>
 #include <map>
 
-
+/*
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -36,7 +37,7 @@ bool firstMouse = false;
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
-/************* TRIANGLE ***************/
+/************* TRIANGLE ***************
     // vertex data
 GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f,
@@ -51,7 +52,7 @@ GLfloat square_vert[] = {
     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Нижний левый
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Верхний левый
 };
-
+/*
 GLuint indices[] = {
     0, 1, 3,   // Первый треугольник
     1, 2, 3    // Второй треугольник
@@ -326,7 +327,7 @@ int main()
     //glfwSetKeyCallback(window, key_callback);
 
 
-    /***********************************************/
+    /***********************************************
     glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
     std::cout << vec.x << vec.y << vec.z << std::endl;
     glm::mat4 trans = glm::mat4(1.0f);
@@ -342,7 +343,7 @@ int main()
 
     std::cout << FragPos4.x << FragPos4.y << FragPos4.z << std::endl;
 
-    /***************** SQUARE *********************/
+    /***************** SQUARE *********************
 
     //GLuint textureCoal = loadTexture("textures/coal.jpg");
     GLuint textureSnow = loadTexture("textures/ice.jpg");
@@ -392,7 +393,7 @@ int main()
 
     Shader Plane = Shader("shaders/plane.vs", "shaders/plane.fs");
 
-    /****************** LIGHTING **********************/
+    /****************** LIGHTING **********************
 
     GLuint cubeVAO, cubeVBO, lightVAO, lightVBO;
     glGenVertexArrays(1, &cubeVAO);
@@ -448,7 +449,7 @@ int main()
     };
     GLuint cubemapTexture = loadCubemap(faces);
 
-    /**************** BILLBOARD *******************/
+    /**************** BILLBOARD *******************
     GLuint billboardVAO, billboardVBO;
 
     glGenVertexArrays(1, &billboardVAO);
@@ -483,7 +484,7 @@ int main()
     unsigned int transparentTexture = loadTexture("textures/blue.png");
 
     glEnable(GL_DEPTH_TEST);
-    /****************** PLAY CYCLE ********************/
+    /****************** PLAY CYCLE ********************
 
     while (!glfwWindowShouldClose(window))     
     {
@@ -565,7 +566,7 @@ int main()
         //glBindVertexArray(0);
         glBindVertexArray(0);
 
-        /*********************** LIGHTING *************************/
+        /*********************** LIGHTING *************************
         glm::vec3 cubeColor(0.0f, 0.0f, 1.0f);
         glm::vec3 lightColor(1.0f, 0.5f, 0.5f);
         glm::vec3 lightPos(1.0f, 1.0f, 1.0f);
@@ -760,4 +761,131 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
+}
+*/
+#define GLEW_STATIC
+#include <GL/glew.h>
+
+#include <GLFW/glfw3.h>
+#include <iostream>
+
+
+static void glfwError(int id, const char* description)
+{
+    std::cout << description << std::endl;
+}
+
+
+int main()
+{
+
+        std::cout << "Hello World!\n";
+        int width = 800;
+        int height = 600;
+        glfwSetErrorCallback(&glfwError);
+        glfwInit();
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+        GLFWwindow* window = glfwCreateWindow(width, height, "kek", NULL, NULL);
+        if (window == NULL)
+        {
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            return -1;
+        }
+        glfwMakeContextCurrent(window);
+
+        glewExperimental = GL_TRUE;
+        if (glewInit() != GLEW_OK)
+        {
+            std::cout << "Failed to initialize GLEW" << std::endl;
+            return -1;
+        }
+        glPointSize(100);
+        glfwGetFramebufferSize(window, &width, &height);
+        glViewport(0, 0, width, height);
+
+        /*
+        GLfloat vertex[] = { 0.0f, 0.0f, 0.0f };
+        GLuint m_vertexBuffer;
+        glGenBuffers(1, &m_vertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3, &vertex[0], GL_STATIC_DRAW);
+        */
+        //glPointSize(100);
+
+        
+
+
+        GLfloat vertices[] = {
+                0.0f, 0.0f, 0.0f
+        };
+
+        GLuint VBO;
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        while (!glfwWindowShouldClose(window))     // play cycle
+        {
+            // check events
+            glfwPollEvents();
+
+            glClear(GL_COLOR_BUFFER_BIT);
+            //glMatrixMode(GL_MODELVIEW);
+            //glLoadIdentity();
+
+            //glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+            glDrawArrays(GL_POINTS, 0, 1);
+
+            glDisableVertexAttribArray(0);
+            // drow here
+            /*
+            glPointSize(100);
+            glBegin(GL_POINTS);
+            glColor3d(1, 1, 1);
+            glVertex3d(0, 0, 4); // первая точка
+            glColor3d(0, 1, 0);
+            glVertex3d(-4, 4, 0);   // вторая точка
+            glColor3d(0, 0, 1);     // третья
+            glVertex3d(-3.5, 4, 0);
+            glEnd();
+            glPointSize(5);
+            glBegin(GL_POINTS);
+            glColor3d(1, 0, 0);
+            glVertex3d(-2, 4, 0); // первая точка
+            glColor3d(0, 1, 0);
+            glVertex3d(-1, 4, 0);   // вторая точка
+            glColor3d(0, 0, 1);     // третье
+            glVertex3d(0, 4, 0);
+            glEnd();
+            glPointSize(10);
+            glEnable(GL_POINT_SMOOTH);
+            glBegin(GL_POINTS);
+            glColor3d(1, 0, 0);
+            glVertex3d(2, 4, 0); // первая точка
+            glColor3d(0, 1, 0);
+            glVertex3d(3, 4, 0);   // вторая точка
+            glColor3d(0, 0, 1);     // третья
+            glVertex3d(4, 4, 0);
+            glEnd();
+            glDisable(GL_POINT_SMOOTH);
+            */
+            // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
+            // then swap buffers
+            glfwSwapBuffers(window);
+        }
+        glDeleteBuffers(1, &VBO);
+        glfwTerminate();
+        return 0;
+
 }
