@@ -16,6 +16,8 @@ uniform float Time;  // Simulation time
 uniform float H;     // Elapsed time between frames
 uniform vec3 Accel;  // Particle acceleration
 uniform float ParticleLifetime;  
+uniform float MinParticleSize;
+uniform float MaxParticleSize;
 
 uniform mat4 MVP;
 
@@ -47,7 +49,12 @@ void update() {
 subroutine (RenderPassType)
 void render() {
     float age = Time - VertexStartTime;
-    Transp = 1.0 - age / ParticleLifetime;
+    Transp = 0.0;
+    if( Time >= VertexStartTime ) {
+        float agePct = age/ParticleLifetime;
+        Transp = 1.0 - agePct;
+        gl_PointSize = mix(MinParticleSize,MaxParticleSize,agePct);
+    }
     gl_Position = MVP * vec4(VertexPosition, 1.0);
 }
 

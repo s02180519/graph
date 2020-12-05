@@ -495,7 +495,7 @@ int main()
     GLuint drawBuf = 1, query;
     GLuint renderSub, updateSub;
     
-    int nParticles = 8000;
+    int nParticles = 1000;
 
     // Generate the buffers
     glGenBuffers(2, posBuf);    // position buffers
@@ -527,14 +527,14 @@ int main()
     GLfloat* data = new GLfloat[nParticles * 3];
     
     for (unsigned int i = 0; i < nParticles; i++) {
-        theta = glm::mix(0.0f, glm::pi<float>() / 6.0f, randFloat());
+        theta = glm::mix(0.0f, glm::pi<float>() / 12.0f, randFloat());
         phi = glm::mix(0.0f, glm::two_pi<float>(), randFloat());
 
         v.x = sinf(theta) * cosf(phi);
         v.y = cosf(theta);
         v.z = sinf(theta) * sinf(phi);
 
-        velocity = glm::mix(1.25f, 1.5f, randFloat());
+        velocity = glm::mix(0.1f, 0.6f, randFloat());
         v = glm::normalize(v) * velocity;
 
         data[3 * i] = v.x;
@@ -553,7 +553,7 @@ int main()
     //delete[] data;
     GLfloat* tdata = new GLfloat[nParticles];
     float ttime = 0.0f;
-    float rate = 0.001f;
+    float rate = 0.2f;
     for (int i = 0; i < nParticles; i++) {
         tdata[i] = ttime;
         ttime += rate;
@@ -631,7 +631,7 @@ int main()
     glTransformFeedbackVaryings(Smoke.Program, 3, outputNames, GL_SEPARATE_ATTRIBS);
     Smoke.Link();
 
-    unsigned int smokeTexture = loadTexture("textures/snow.jpg");
+    unsigned int smokeTexture = loadTexture("textures/smoke.png");
     float T = glfwGetTime();
     
     
@@ -667,6 +667,7 @@ int main()
         //glActiveTexture(GL_TEXTURE0);
         glm::mat4 model = glm::mat4(1.0f);
         
+        /*
        glBindTexture(GL_TEXTURE_2D, textureSnow);
        glUniform1i(glGetUniformLocation(Plane.Program, "ourTexture"), 0);
 
@@ -677,6 +678,7 @@ int main()
        glBindVertexArray(planeVAO);
        glDrawArrays(GL_TRIANGLES, 0, 6);
        glBindVertexArray(0);
+       */
         
         Star.Use();
         glm::mat4 transform = glm::mat4(1.0f);
@@ -862,12 +864,14 @@ int main()
         glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &updateSub);
 
         Smoke.setInt("texture1", 0);
-        Smoke.setFloat("ParticleLifetime", 3.5f);
+        Smoke.setFloat("ParticleLifetime", 6.0f);
         //Smoke.setVec3("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
         //prog.setUniform("ParticleLifetime", 3.5f);
         //prog.setUniform("Accel", vec3(0.0f, -0.4f, 0.0f));
-        glm::vec3 Accel(0.0f, -0.4f, 0.0f);
+        glm::vec3 Accel(0.0f, 0.1f, 0.0f);
         Smoke.setVec3("Accel", Accel);
+        Smoke.setFloat("MinParticleSize", 20.0f);
+        Smoke.setFloat("MaxParticleSize", 200.0f);
 
         Smoke.setFloat("Time", glfwGetTime());
         Smoke.setFloat("H", glfwGetTime() - T);
@@ -875,6 +879,8 @@ int main()
 
         glEnable(GL_RASTERIZER_DISCARD);
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glBeginTransformFeedback(GL_POINTS);
         glBindVertexArray(particleArray[1 - drawBuf]);
@@ -891,7 +897,7 @@ int main()
        // prog.setUniform("H", deltaT);
 
         model = glm::mat4(1.0f);
-        glm::vec3 la(6.0f, 6.0f, 6.0f);
+        glm::vec3 la(4.0f, 0.0f, 4.0f);
         model = glm::translate(model, la);
         //glClear(GL_COLOR_BUFFER_BIT);
         glm::mat4 mv = view * model;
