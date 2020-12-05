@@ -18,6 +18,10 @@
 #include <stb_image.h>
 
 
+float randFloat() {
+    return ((float)rand() / RAND_MAX);
+}
+
 //glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 //glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 //glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -482,7 +486,83 @@ int main()
     Shader Glass("shaders/glass.vs", "shaders/glass.fs");
     unsigned int transparentTexture = loadTexture("textures/blue.png");
 
-    glEnable(GL_DEPTH_TEST);
+    // SMOKE
+    
+    GLuint initVel, startTime, particles;
+    GLuint nParticles;
+    float angle;
+    float time;
+    
+    nParticles = 8000;
+
+    // Generate the buffers
+    glGenBuffers(1, &initVel);   // Initial velocity buffer
+    glGenBuffers(1, &startTime); // Start time buffer
+    
+    // Allocate space for all buffers
+    int size = nParticles * 3 * sizeof(float);
+    glBindBuffer(GL_ARRAY_BUFFER, initVel);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, startTime);
+    glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), NULL, GL_STATIC_DRAW);
+    
+    glm::vec3 v(0.0f);
+    float velocity, theta, phi;
+    GLfloat* data = new GLfloat[nParticles * 3];
+    
+    for (unsigned int i = 0; i < nParticles; i++) {
+        theta = glm::mix(0.0f, glm::pi<float>() / 6.0f, randFloat());
+        phi = glm::mix(0.0f, glm::two_pi<float>(), randFloat());
+
+        v.x = sinf(theta) * cosf(phi);
+        v.y = cosf(theta);
+        v.z = sinf(theta) * sinf(phi);
+
+        velocity = glm::mix(1.25f, 1.5f, randFloat());
+        v = glm::normalize(v) * velocity;
+
+        data[3 * i] = v.x;
+        data[3 * i + 1] = v.y;
+        data[3 * i + 2] = v.z;
+    }
+    
+    glBindBuffer(GL_ARRAY_BUFFER, initVel);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+    
+    //delete[] data;
+    
+    GLfloat* tdata = new GLfloat[nParticles];
+    float ttime = 0.0f;
+    float rate = 0.00075f;
+    
+    for (unsigned int i = 0; i < nParticles; i++) {
+        tdata[i] = ttime;
+        ttime += rate;
+    }
+    
+    glBindBuffer(GL_ARRAY_BUFFER, startTime);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, nParticles * sizeof(float), tdata);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //delete[] data;
+
+    glGenVertexArrays(1, &particles);
+    glBindVertexArray(particles);
+    glBindBuffer(GL_ARRAY_BUFFER, initVel);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, startTime);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    Shader Smoke("shaders/smoke.vs", "shaders/smoke.fs");
+    unsigned int smokeTexture = loadTexture("textures/ice.jpg");
+
+    
+    
     /****************** PLAY CYCLE ********************/
 
     while (!glfwWindowShouldClose(window))     
@@ -501,6 +581,8 @@ int main()
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
 
         glm::mat4 view = glm::mat4(20.0f);
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -686,6 +768,37 @@ int main()
         
         glBindVertexArray(0);
         //gluSphere()
+
+        // SMOKE 
+        
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPointSize(10.0f);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, smokeTexture);
+        //prog.setUniform("ParticleTex", 0);
+        //prog.setUniform("ParticleLifetime", 3.5f);
+        //prog.setUniform("Gravity", vec3(0.0f, -0.2f, 0.0f));
+        
+        Smoke.Use();
+        Smoke.setInt("texture1", 0);
+        Smoke.setFloat("ParticleLifetime", 3.5f);
+        Smoke.setVec3("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
+
+        Smoke.setFloat("Time", glfwGetTime());
+        model = glm::mat4(1.0f);
+        //glm::vec3 la(6.0f, 6.0f, 6.0f);
+        //model = glm::translate(model, la);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        glm::mat4 mv = view * model;
+        Smoke.setMat4("MVP", projection * mv);
+        glBindVertexArray(particles);
+        glDrawArrays(GL_POINTS, 0, nParticles);
+        glBindVertexArray(0);
+        
+
         
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
         // then swap buffers
@@ -706,6 +819,11 @@ int main()
     glDeleteBuffers(1, &transparentVBO);
     glDeleteVertexArrays(1, &billboardVAO);
     glDeleteBuffers(1, &billboardVBO);
+    delete[] data;
+    delete[] tdata;
+    glDeleteBuffers(1, &initVel);   
+    glDeleteBuffers(1, &startTime); 
+    glDeleteVertexArrays(1, &particles);
     glfwTerminate();
     return 0;
 }
