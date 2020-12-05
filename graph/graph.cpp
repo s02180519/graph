@@ -9,6 +9,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "ShaderSmoke.h"
 
 #include <vector>
 #include <map>
@@ -488,24 +489,39 @@ int main()
 
     // SMOKE
     
-    GLuint initVel, startTime, particles;
-    GLuint nParticles;
-    float angle;
-    float time;
+    GLuint posBuf[2], velBuf[2];
+    GLuint particleArray[2];
+    GLuint feedback[2], initVel, startTime[2];
+    GLuint drawBuf = 1, query;
+    GLuint renderSub, updateSub;
     
-    nParticles = 8000;
+    int nParticles = 8000;
 
     // Generate the buffers
-    glGenBuffers(1, &initVel);   // Initial velocity buffer
-    glGenBuffers(1, &startTime); // Start time buffer
+    glGenBuffers(2, posBuf);    // position buffers
+    glGenBuffers(2, velBuf);    // velocity buffers
+    glGenBuffers(2, startTime); // Start time buffers
+    glGenBuffers(1, &initVel);  // Initial velocity buffer (never changes, only need one)
+
     
-    // Allocate space for all buffers
-    int size = nParticles * 3 * sizeof(float);
+     // Allocate space for all buffers
+    int size = nParticles * 3 * sizeof(GLfloat);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[0]);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[1]);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[0]);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[1]);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_COPY);
     glBindBuffer(GL_ARRAY_BUFFER, initVel);
     glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, startTime);
-    glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, startTime[0]);
+    glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), NULL, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, startTime[1]);
+    glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), NULL, GL_DYNAMIC_COPY);
     
+    // Fill the first velocity buffer with random velocities
     glm::vec3 v(0.0f);
     float velocity, theta, phi;
     GLfloat* data = new GLfloat[nParticles * 3];
@@ -526,41 +542,97 @@ int main()
         data[3 * i + 2] = v.z;
     }
     
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
     glBindBuffer(GL_ARRAY_BUFFER, initVel);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
     
     //delete[] data;
     
+    // Fill the first start time buffer
+    //delete[] data;
     GLfloat* tdata = new GLfloat[nParticles];
     float ttime = 0.0f;
-    float rate = 0.00075f;
-    
-    for (unsigned int i = 0; i < nParticles; i++) {
+    float rate = 0.001f;
+    for (int i = 0; i < nParticles; i++) {
         tdata[i] = ttime;
         ttime += rate;
     }
-    
-    glBindBuffer(GL_ARRAY_BUFFER, startTime);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, nParticles * sizeof(float), tdata);
-    
+    glBindBuffer(GL_ARRAY_BUFFER, startTime[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, nParticles * sizeof(float), data);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     //delete[] data;
 
-    glGenVertexArrays(1, &particles);
-    glBindVertexArray(particles);
-    glBindBuffer(GL_ARRAY_BUFFER, initVel);
+    // Create vertex arrays for each set of buffers
+    glGenVertexArrays(2, particleArray);
+
+    // Set up particle array 0
+    glBindVertexArray(particleArray[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[0]);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, startTime);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[0]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, startTime[0]);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, initVel);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(3);
+
+    // Set up particle array 1
+    glBindVertexArray(particleArray[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[1]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[1]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, startTime[1]);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, initVel);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
 
-    Shader Smoke("shaders/smoke.vs", "shaders/smoke.fs");
-    unsigned int smokeTexture = loadTexture("textures/ice.jpg");
+    // Setup the feedback objects
+    glGenTransformFeedbacks(2, feedback);
 
+    // Transform feedback 0
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, posBuf[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, velBuf[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, startTime[0]);
+
+    // Transform feedback 1
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[1]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, posBuf[1]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, velBuf[1]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, startTime[1]);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+
+    GLint value;
+    glGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_BUFFERS, &value);
+    printf("MAX_TRANSFORM_FEEDBACK_BUFFERS = %d\n", value);
+
+    ShaderSmoke Smoke("shaders/smoke.vs", "shaders/smoke.fs");
+    const char* outputNames[] = { "Position", "Velocity", "StartTime" };
+    glTransformFeedbackVaryings(Smoke.Program, 3, outputNames, GL_SEPARATE_ATTRIBS);
+    Smoke.Link();
+
+    unsigned int smokeTexture = loadTexture("textures/snow.jpg");
+    float T = glfwGetTime();
     
     
     /****************** PLAY CYCLE ********************/
@@ -771,7 +843,7 @@ int main()
 
         // SMOKE 
         
-        glDisable(GL_DEPTH_TEST);
+        //glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPointSize(10.0f);
@@ -783,23 +855,58 @@ int main()
         //prog.setUniform("Gravity", vec3(0.0f, -0.2f, 0.0f));
         
         Smoke.Use();
+
+        renderSub = glGetSubroutineIndex(Smoke.Program, GL_VERTEX_SHADER, "render");
+        updateSub = glGetSubroutineIndex(Smoke.Program, GL_VERTEX_SHADER, "update");
+
+        glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &updateSub);
+
         Smoke.setInt("texture1", 0);
         Smoke.setFloat("ParticleLifetime", 3.5f);
-        Smoke.setVec3("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
+        //Smoke.setVec3("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
+        //prog.setUniform("ParticleLifetime", 3.5f);
+        //prog.setUniform("Accel", vec3(0.0f, -0.4f, 0.0f));
+        glm::vec3 Accel(0.0f, -0.4f, 0.0f);
+        Smoke.setVec3("Accel", Accel);
 
         Smoke.setFloat("Time", glfwGetTime());
+        Smoke.setFloat("H", glfwGetTime() - T);
+        T = glfwGetTime();
+
+        glEnable(GL_RASTERIZER_DISCARD);
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+
+        glBeginTransformFeedback(GL_POINTS);
+        glBindVertexArray(particleArray[1 - drawBuf]);
+        glDrawArrays(GL_POINTS, 0, nParticles);
+        glEndTransformFeedback();
+
+        glDisable(GL_RASTERIZER_DISCARD);
+
+        // Render pass
+        glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &renderSub);
+        //glClear(GL_COLOR_BUFFER_BIT);
+
+       // prog.setUniform("Time", time);
+       // prog.setUniform("H", deltaT);
+
         model = glm::mat4(1.0f);
-        //glm::vec3 la(6.0f, 6.0f, 6.0f);
-        //model = glm::translate(model, la);
+        glm::vec3 la(6.0f, 6.0f, 6.0f);
+        model = glm::translate(model, la);
         //glClear(GL_COLOR_BUFFER_BIT);
         glm::mat4 mv = view * model;
         Smoke.setMat4("MVP", projection * mv);
-        glBindVertexArray(particles);
-        glDrawArrays(GL_POINTS, 0, nParticles);
+        glBindVertexArray(particleArray[drawBuf]);
+        glDrawTransformFeedback(GL_POINTS, feedback[drawBuf]);
+
+
+        // swap buffers
+        drawBuf = 1 - drawBuf;
+
         glBindVertexArray(0);
         
 
-        
+        //glEnable(GL_RASTERIZER_DISCARD);
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
         // then swap buffers
         glfwSwapBuffers(window);
@@ -822,8 +929,8 @@ int main()
     delete[] data;
     delete[] tdata;
     glDeleteBuffers(1, &initVel);   
-    glDeleteBuffers(1, &startTime); 
-    glDeleteVertexArrays(1, &particles);
+    //glDeleteBuffers(2, &startTime); 
+    //glDeleteVertexArrays(1, &particles);
     glfwTerminate();
     return 0;
 }

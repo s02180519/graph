@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderSmoke.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\square.fs" />

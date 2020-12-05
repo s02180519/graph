@@ -1,26 +1,58 @@
 #version 330 core
-layout (location = 0) in vec3 VertexInitVel;
-layout (location = 1) in float StartTime;
+subroutine void RenderPassType();
+subroutine uniform RenderPassType RenderPass;
 
-out float Transp;
+layout (location = 0) in vec3 VertexPosition;
+layout (location = 1) in vec3 VertexVelocity;
+layout (location = 2) in float VertexStartTime;
+layout (location = 3) in vec3 VertexInitialVelocity;
 
-uniform float Time;
-uniform vec3 Gravity;
-uniform float ParticleLifetime;
+out vec3 Position;   // To transform feedback
+out vec3 Velocity;   // To transform feedback
+out float StartTime; // To transform feedback
+out float Transp;    // To fragment shader
+
+uniform float Time;  // Simulation time
+uniform float H;     // Elapsed time between frames
+uniform vec3 Accel;  // Particle acceleration
+uniform float ParticleLifetime;  
 
 uniform mat4 MVP;
 
+subroutine (RenderPassType)
+void update() {
+
+    // Update position & velocity for next frame
+    Position = VertexPosition;
+    Velocity = VertexVelocity;
+    StartTime = VertexStartTime;
+
+    if( Time >= StartTime ) {
+
+        float age = Time - StartTime;
+
+        if( age > ParticleLifetime ) {
+            // The particle is past it's lifetime, recycle.
+            Position = vec3(0.0);
+            Velocity = VertexInitialVelocity;
+            StartTime = Time;
+        } else {
+            // The particle is alive, update.
+            Position += Velocity * H;
+            Velocity += Accel * H;
+        }
+    }
+}
+
+subroutine (RenderPassType)
+void render() {
+    float age = Time - VertexStartTime;
+    Transp = 1.0 - age / ParticleLifetime;
+    gl_Position = MVP * vec4(VertexPosition, 1.0);
+}
+
 void main()
 {
-	vec3 pos = vec3(0.0);
-	Transp = 0.0;
-
-	if (Time > StartTime) {
-		float t = Time - StartTime;
-		if ( t < ParticleLifetime ) {
-			pos = VertexInitVel * t + Gravity * t * t;
-			Transp = 1.0 - t / ParticleLifetime;
-		}
-	}
-	gl_Position = MVP * vec4(pos, 1.0);
+    // This will call either render() or update()
+    RenderPass();
 }
