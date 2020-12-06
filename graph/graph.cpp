@@ -420,6 +420,73 @@ public:
 };
 
 
+class Transparent {
+    GLuint transparentVAO, transparentVBO;
+    GLuint transparentTexture;
+    Shader shader = Shader("shaders/glass.vs", "shaders/glass.fs");
+public:
+    Transparent() {
+        glGenVertexArrays(1, &transparentVAO);
+        glGenBuffers(1, &transparentVBO);
+        glBindVertexArray(transparentVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glBindVertexArray(0);
+
+        transparentTexture = loadTexture("textures/blue.png");
+    }
+
+    void Draw() {
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+        glm::mat4 model(1.0f);
+
+        // windows
+        std::map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < windows.size(); i++)
+        {
+            float distance = glm::length(camera.Position - windows[i]);
+            sorted[distance] = windows[i];
+        }
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        shader.setInt("texture1", 0);
+        shader.Use();
+        //glUniform1i(glGetUniformLocation(Billboard.Program, "ourTexture"), 1);
+        //glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        //Glass.setInt("texture1", 1);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
+        //model = glm::mat4(1.0f);
+        shader.setMat4("model", model);
+        glBindVertexArray(transparentVAO);
+        //glBindTexture(GL_TEXTURE_2D, transparentTexture);
+
+        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, it->second);
+            shader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+
+        glBindVertexArray(0);
+    }
+
+    ~Transparent() {
+        glDeleteVertexArrays(1, &transparentVAO);
+        glDeleteBuffers(1, &transparentVBO);
+    }
+
+};
+
 int main()
 {
     int width = 800;
@@ -568,21 +635,8 @@ int main()
     Billboard AmongUs;
 
     // transparent VAO
-    unsigned int transparentVAO, transparentVBO;
-    glGenVertexArrays(1, &transparentVAO);
-    glGenBuffers(1, &transparentVBO);
-    glBindVertexArray(transparentVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glBindVertexArray(0);
-
-    Shader Glass("shaders/glass.vs", "shaders/glass.fs");
-    unsigned int transparentTexture = loadTexture("textures/blue.png");
-
+    Transparent Window;
+    
     // SMOKE
     
     GLuint posBuf[2], velBuf[2];
@@ -902,40 +956,9 @@ int main()
         // billboard
         AmongUs.Draw();
         
-        view = camera.GetViewMatrix();
+        // window
+        Window.Draw();
 
-        // windows
-        std::map<float, glm::vec3> sorted;
-        for (unsigned int i = 0; i < windows.size(); i++)
-        {
-            float distance = glm::length(camera.Position - windows[i]);
-            sorted[distance] = windows[i];
-        }
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, transparentTexture);
-        Glass.setInt("texture1", 0);
-        Glass.Use();
-        //glUniform1i(glGetUniformLocation(Billboard.Program, "ourTexture"), 1);
-        //glBindTexture(GL_TEXTURE_2D, transparentTexture);
-        //Glass.setInt("texture1", 1);
-        Glass.setMat4("view", view);
-        Glass.setMat4("projection", projection);
-        //model = glm::mat4(1.0f);
-        Glass.setMat4("model", model);
-        glBindVertexArray(transparentVAO);
-        //glBindTexture(GL_TEXTURE_2D, transparentTexture);
-        
-        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
-        {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, it->second);
-            Glass.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
-        
-        glBindVertexArray(0);
         //gluSphere()
 
         // SMOKE 
@@ -1032,8 +1055,6 @@ int main()
     glDeleteBuffers(1, &cubeVBO);
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
-    glDeleteVertexArrays(1, &transparentVAO);
-    glDeleteBuffers(1, &transparentVBO);
     delete[] data;
     delete[] tdata;
     glDeleteBuffers(1, &initVel);   
