@@ -18,6 +18,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#define WIDTH 800
+#define HEIGHT 600
 
 float randFloat() {
     return ((float)rand() / RAND_MAX);
@@ -291,6 +293,65 @@ static void glfwError(int id, const char* description)
     std::cout << description << std::endl;
 }
 
+class Skybox {
+public:
+    GLuint skyboxVAO, skyboxVBO;
+    GLuint cubemapTexture;
+    Shader shader = Shader("shaders/skybox.vs", "shaders/skybox.fs");
+
+    Skybox() {
+        // skybox VAO
+        //GLuint skyboxVAO, skyboxVBO;
+        glGenVertexArrays(1, &skyboxVAO);
+        glGenBuffers(1, &skyboxVBO);
+        glBindVertexArray(skyboxVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
+        glBindVertexArray(0);
+        //shader = Shader("shaders/skybox.vs", "shaders/skybox.fs");
+
+        std::vector<std::string> faces
+        {
+            "textures/ArstaBridge/posx.jpg",
+            "textures/ArstaBridge/negx.jpg",
+            "textures/ArstaBridge/posy.jpg",
+            "textures/ArstaBridge/negy.jpg",
+            "textures/ArstaBridge/posz.jpg",
+            "textures/ArstaBridge/negz.jpg"
+        };
+        cubemapTexture = loadCubemap(faces);
+    }
+
+    void Draw() {
+        // draw skybox
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glUniform1i(glGetUniformLocation(shader.Program, "ourTexture"), 0);
+        shader.Use();
+        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
+    }
+
+    ~Skybox() {
+        glDeleteVertexArrays(1, &skyboxVAO);
+        glDeleteBuffers(1, &skyboxVBO);
+    }
+};
+
 int main()
 {
     int width = 800;
@@ -346,6 +407,10 @@ int main()
     glm::vec4 FragPos4 = model * glm::vec4(position, 1.0f);
 
     std::cout << FragPos4.x << FragPos4.y << FragPos4.z << std::endl;
+
+    //////////////////////////////////////////////////
+
+    Skybox skybox;
 
     /***************** SQUARE *********************/
 
@@ -429,29 +494,7 @@ int main()
     Shader Cube = Shader("shaders/square.vs", "shaders/square.fs");
     Shader Light = Shader("shaders/light.vs", "shaders/light.fs");
 
-    // skybox VAO
-    GLuint skyboxVAO, skyboxVBO;
-    glGenVertexArrays(1, &skyboxVAO);
-    glGenBuffers(1, &skyboxVBO);
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-    glBindVertexArray(0);
-    Shader Skybox("shaders/skybox.vs", "shaders/skybox.fs");
-
-    std::vector<std::string> faces
-    {
-        "textures/ArstaBridge/posx.jpg",
-        "textures/ArstaBridge/negx.jpg",
-        "textures/ArstaBridge/posy.jpg",
-        "textures/ArstaBridge/negy.jpg",
-        "textures/ArstaBridge/posz.jpg",
-        "textures/ArstaBridge/negz.jpg"
-    };
-    GLuint cubemapTexture = loadCubemap(faces);
+   
 
     /**************** BILLBOARD *******************/
     GLuint billboardVAO, billboardVBO;
@@ -800,19 +843,8 @@ int main()
         glBindVertexArray(0);
 
 
-        // draw skybox
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-        Skybox.Use();
-        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-        glUniformMatrix4fv(glGetUniformLocation(Skybox.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(Skybox.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        // skybox cube
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-        glDepthFunc(GL_LESS); // set depth function back to default
+       //draw skybox
+        skybox.Draw();
 
 
         // billboard
@@ -979,8 +1011,6 @@ int main()
     glDeleteBuffers(1, &cubeVBO);
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
-    glDeleteVertexArrays(1, &skyboxVAO);
-    glDeleteBuffers(1, &skyboxVBO);
     glDeleteVertexArrays(1, &transparentVAO);
     glDeleteBuffers(1, &transparentVBO);
     glDeleteVertexArrays(1, &billboardVAO);
