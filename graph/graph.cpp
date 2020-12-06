@@ -1057,7 +1057,7 @@ public:
         glViewport(0, 0, WIDTH, HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         object.Use();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         object.setMat4("projection", projection);
         object.setMat4("view", view);
@@ -1180,56 +1180,15 @@ int main()
 
     //////////////////////////////////////////////////
 
-    //Skybox skybox;
-    //Star bear;
+    Skybox skybox;
+    Star bear;
     //Plane ice;
     //Cube blueCube;
-    //Billboard AmongUs;
-    //Transparent Window;
-    //Smoke cloud;
+    Billboard AmongUs;
+    Transparent Window;
+    Smoke cloud;
 
-    /*
-    // Shadow
-    GLfloat border[] = { 1.0f, 0.0f,0.0f,0.0f };
-    GLuint shadowFBO, depthTex;
-    int shadowMapWidth = 512, shadowMapHeight = 512;
-
-    glGenTextures(1, &depthTex);
-    glBindTexture(GL_TEXTURE_2D, depthTex);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, shadowMapWidth, shadowMapHeight);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-
-    // Assign the depth buffer texture to texture channel 0
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, depthTex);
-
-    // Create and set up the FBO
-    glGenFramebuffers(1, &shadowFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_TEXTURE_2D, depthTex, 0);
-
-    GLenum drawBuffers[] = { GL_NONE };
-    glDrawBuffers(1, drawBuffers);
-
-    GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (result == GL_FRAMEBUFFER_COMPLETE) {
-        printf("Framebuffer is complete.\n");
-    }
-    else {
-        printf("Framebuffer is not complete.\n");
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    Shader Shadow("shaders/glass.vs", "shaders/glass.fs");
-    */
+    
 
     ShadowScene planeAndCubes;
     
@@ -1256,12 +1215,15 @@ int main()
 
         planeAndCubes.Draw();
         //ice.Draw();
-        //bear.Draw();
-        //skybox.Draw();
+        bear.Draw();
+        skybox.Draw();
         //blueCube.Draw();
-        //AmongUs.Draw();
-        //Window.Draw();
-        //cloud.Draw();
+        //glEnable(GL_BLEND);
+        //glEnable(GL_DEPTH_TEST);
+        AmongUs.Draw();
+        Window.Draw();
+        cloud.Draw();
+        //planeAndCubes.Draw();
         
         //glEnable(GL_RASTERIZER_DISCARD);
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
