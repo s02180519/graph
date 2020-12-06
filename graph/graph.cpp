@@ -495,7 +495,7 @@ int main()
     GLuint drawBuf = 1, query;
     GLuint renderSub, updateSub;
     
-    int nParticles = 1000;
+    int nParticles = 500;
 
     // Generate the buffers
     glGenBuffers(2, posBuf);    // position buffers
@@ -527,14 +527,14 @@ int main()
     GLfloat* data = new GLfloat[nParticles * 3];
     
     for (unsigned int i = 0; i < nParticles; i++) {
-        theta = glm::mix(0.0f, glm::pi<float>() / 12.0f, randFloat());
+        theta = glm::mix(0.0f, glm::pi<float>() / 3.0f, randFloat());
         phi = glm::mix(0.0f, glm::two_pi<float>(), randFloat());
 
         v.x = sinf(theta) * cosf(phi);
         v.y = cosf(theta);
         v.z = sinf(theta) * sinf(phi);
 
-        velocity = glm::mix(0.1f, 0.6f, randFloat());
+        velocity = glm::mix(0.1f, 0.3f, randFloat());
         v = glm::normalize(v) * velocity;
 
         data[3 * i] = v.x;
@@ -667,7 +667,7 @@ int main()
         //glActiveTexture(GL_TEXTURE0);
         glm::mat4 model = glm::mat4(1.0f);
         
-        /*
+        
        glBindTexture(GL_TEXTURE_2D, textureSnow);
        glUniform1i(glGetUniformLocation(Plane.Program, "ourTexture"), 0);
 
@@ -678,7 +678,7 @@ int main()
        glBindVertexArray(planeVAO);
        glDrawArrays(GL_TRIANGLES, 0, 6);
        glBindVertexArray(0);
-       */
+       
         
         Star.Use();
         glm::mat4 transform = glm::mat4(1.0f);
@@ -845,10 +845,11 @@ int main()
 
         // SMOKE 
         
-        //glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
+        //glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glPointSize(10.0f);
+        //glPointSize(10.0f);
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, smokeTexture);
@@ -864,24 +865,29 @@ int main()
         glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &updateSub);
 
         Smoke.setInt("texture1", 0);
-        Smoke.setFloat("ParticleLifetime", 6.0f);
+        Smoke.setFloat("ParticleLifetime", 10.0f);
         //Smoke.setVec3("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
         //prog.setUniform("ParticleLifetime", 3.5f);
         //prog.setUniform("Accel", vec3(0.0f, -0.4f, 0.0f));
         glm::vec3 Accel(0.0f, 0.1f, 0.0f);
         Smoke.setVec3("Accel", Accel);
-        Smoke.setFloat("MinParticleSize", 20.0f);
+        Smoke.setFloat("MinParticleSize", 10.0f);
         Smoke.setFloat("MaxParticleSize", 200.0f);
 
         Smoke.setFloat("Time", glfwGetTime());
         Smoke.setFloat("H", glfwGetTime() - T);
         T = glfwGetTime();
 
+
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        glPointSize(10.0);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glEnable(GL_RASTERIZER_DISCARD);
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glBeginTransformFeedback(GL_POINTS);
         glBindVertexArray(particleArray[1 - drawBuf]);
         glDrawArrays(GL_POINTS, 0, nParticles);
@@ -892,16 +898,21 @@ int main()
         // Render pass
         glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &renderSub);
         //glClear(GL_COLOR_BUFFER_BIT);
-
-       // prog.setUniform("Time", time);
-       // prog.setUniform("H", deltaT);
-
         model = glm::mat4(1.0f);
-        glm::vec3 la(4.0f, 0.0f, 4.0f);
+        glm::vec3 la(2.0f, 0.0f, 2.0f);
         model = glm::translate(model, la);
         //glClear(GL_COLOR_BUFFER_BIT);
         glm::mat4 mv = view * model;
-        Smoke.setMat4("MVP", projection * mv);
+        Smoke.setMat4("MVP", projection* mv);
+       // prog.setUniform("Time", time);
+       // prog.setUniform("H", deltaT);
+
+        //model = glm::mat4(1.0f);
+        //glm::vec3 la(4.0f, 0.0f, 4.0f);
+        //model = glm::translate(model, la);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        //glm::mat4 mv = view * model;
+        //Smoke.setMat4("MVP", projection * mv);
         glBindVertexArray(particleArray[drawBuf]);
         glDrawTransformFeedback(GL_POINTS, feedback[drawBuf]);
 

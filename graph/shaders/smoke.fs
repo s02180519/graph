@@ -1,6 +1,7 @@
 #version 330 core
 
 in float Transp;
+//in vec3 Position;
 
 uniform sampler2D texture1;
 
