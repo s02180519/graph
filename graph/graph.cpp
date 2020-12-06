@@ -633,7 +633,49 @@ int main()
 
     unsigned int smokeTexture = loadTexture("textures/smoke.png");
     float T = glfwGetTime();
-    
+
+    /*
+    // Shadow
+    GLfloat border[] = { 1.0f, 0.0f,0.0f,0.0f };
+    GLuint shadowFBO, depthTex;
+    int shadowMapWidth = 512, shadowMapHeight = 512;
+
+    glGenTextures(1, &depthTex);
+    glBindTexture(GL_TEXTURE_2D, depthTex);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, shadowMapWidth, shadowMapHeight);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+
+    // Assign the depth buffer texture to texture channel 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthTex);
+
+    // Create and set up the FBO
+    glGenFramebuffers(1, &shadowFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GL_TEXTURE_2D, depthTex, 0);
+
+    GLenum drawBuffers[] = { GL_NONE };
+    glDrawBuffers(1, drawBuffers);
+
+    GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (result == GL_FRAMEBUFFER_COMPLETE) {
+        printf("Framebuffer is complete.\n");
+    }
+    else {
+        printf("Framebuffer is not complete.\n");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    Shader Shadow("shaders/glass.vs", "shaders/glass.fs");
+    */
     
     /****************** PLAY CYCLE ********************/
 
@@ -856,7 +898,7 @@ int main()
         //prog.setUniform("ParticleTex", 0);
         //prog.setUniform("ParticleLifetime", 3.5f);
         //prog.setUniform("Gravity", vec3(0.0f, -0.2f, 0.0f));
-        
+        //glEnable(GL_DEPTH_TEST);
         Smoke.Use();
 
         renderSub = glGetSubroutineIndex(Smoke.Program, GL_VERTEX_SHADER, "render");
@@ -865,7 +907,7 @@ int main()
         glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &updateSub);
 
         Smoke.setInt("texture1", 0);
-        Smoke.setFloat("ParticleLifetime", 10.0f);
+        Smoke.setFloat("ParticleLifetime", 7.0f);
         //Smoke.setVec3("Gravity", glm::vec3(0.0f, -0.2f, 0.0f));
         //prog.setUniform("ParticleLifetime", 3.5f);
         //prog.setUniform("Accel", vec3(0.0f, -0.4f, 0.0f));
@@ -922,7 +964,7 @@ int main()
 
         glBindVertexArray(0);
         
-
+        glEnable(GL_DEPTH_TEST);
         //glEnable(GL_RASTERIZER_DISCARD);
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
         // then swap buffers
