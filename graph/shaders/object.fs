@@ -15,7 +15,7 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 //#define BIAS 0.00001
-//#define PCF 4 // radius of texels to average from
+#define PCF 3 // radius of texels to average from
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -35,16 +35,16 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     // PCF
     float shadow = 0.0;
-    vec2 texelSize = 2.0 / textureSize(shadowMap, 0);
-    for(int x = -1; x <= 1; ++x)
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -PCF; x <= PCF; ++x)
     {
-        for(int y = -1; y <= 1; ++y)
+        for(int y = -PCF; y <= PCF; ++y)
         {
             float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
             shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
         }    
     }
-    shadow /= 10.0;
+    shadow /= (2*PCF+1)*(2*PCF+1);
     
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
