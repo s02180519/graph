@@ -808,6 +808,57 @@ public:
     }
 };
 
+class Cube {
+    GLuint cubeVAO, cubeVBO;
+    Shader shader = Shader("shaders/square.vs", "shaders/square.fs");
+public:
+    Cube() {
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &cubeVBO);
+        glBindVertexArray(cubeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vert), cube_vert, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+        glBindVertexArray(0);
+    }
+
+    void Draw() {
+        glm::vec3 cubeColor(0.0f, 0.0f, 1.0f);
+        glm::vec3 lightColor(1.0f, 0.5f, 0.5f);
+        glm::vec3 lightPos(1.0f, 1.0f, 1.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+        glm::mat4 model(1.0f);
+
+        shader.Use();
+        glm::vec3 cubePos(1.0f, 1.0f, 0.0f);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePos);
+
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniform3f(glGetUniformLocation(shader.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), cubeColor.x, cubeColor.y, cubeColor.z);
+        glUniform3f(glGetUniformLocation(shader.Program, "lightColor"), 1.0f, 0.5f, 0.5f);
+        glUniform3f(glGetUniformLocation(shader.Program, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+    }
+
+    ~Cube() {
+        glDeleteVertexArrays(1, &cubeVAO);
+        glDeleteBuffers(1, &cubeVBO);
+    }
+};
+
 int main()
 {
     int width = 800;
@@ -845,10 +896,9 @@ int main()
     
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
-    //glfwSetKeyCallback(window, key_callback);
+   
+    ///////////////////////////////////////////////////
 
-
-    /***********************************************/
     glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
     std::cout << vec.x << vec.y << vec.z << std::endl;
     glm::mat4 trans = glm::mat4(1.0f);
@@ -867,58 +917,11 @@ int main()
     //////////////////////////////////////////////////
 
     Skybox skybox;
-
-    /***************** SQUARE *********************/
-
-    //GLuint textureCoal = loadTexture("textures/coal.jpg");
-
-
-    // star
     Star bear;
-    
-    // plane
     Plane ice;
-
-    /****************** LIGHTING **********************/
-
-    GLuint cubeVAO, cubeVBO, lightVAO, lightVBO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glBindVertexArray(cubeVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vert), cube_vert, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glBindVertexArray(0);
-    
-    glGenVertexArrays(1, &lightVAO);
-    glGenBuffers(1, &lightVBO);
-    glBindVertexArray(lightVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vert), cube_vert, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-
-
-    Shader Cube = Shader("shaders/square.vs", "shaders/square.fs");
-    Shader Light = Shader("shaders/light.vs", "shaders/light.fs");
-
-   
-
-    /**************** BILLBOARD *******************/
+    Cube blueCube;
     Billboard AmongUs;
-
-    // transparent VAO
     Transparent Window;
-    
-    // SMOKE
-
     Smoke cloud;
 
     /*
@@ -964,8 +967,7 @@ int main()
     Shader Shadow("shaders/glass.vs", "shaders/glass.fs");
     */
     
-    /****************** PLAY CYCLE ********************/
-
+    // game cycle   
     while (!glfwWindowShouldClose(window))     
     {
         // check events
@@ -979,78 +981,18 @@ int main()
         glfwPollEvents();
         Do_Movement();
 
-
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
 
-        glm::mat4 view = glm::mat4(20.0f);
-        //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        view = camera.GetViewMatrix();
-
-        float screenWidth = 800.0f;
-        float screenHeight = 600.0f;
-        glm::mat4 projection = glm::mat4(1.0f);
-        projection = glm::perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
-        //glActiveTexture(GL_TEXTURE0);
-        glm::mat4 model = glm::mat4(1.0f);
-
-        // ice
+        // draw here
         ice.Draw();
-        
-        // star
         bear.Draw();
-
-        /*********************** LIGHTING *************************/
-        glm::vec3 cubeColor(0.0f, 0.0f, 1.0f);
-        glm::vec3 lightColor(1.0f, 0.5f, 0.5f);
-        glm::vec3 lightPos(1.0f, 1.0f, 1.0f);
-
-        Cube.Use();
-        glm::vec3 cubePos(1.0f, 1.0f, 0.0f);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePos);
-        glUniformMatrix4fv(glGetUniformLocation(Cube.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(Cube.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(Cube.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniform3f(glGetUniformLocation(Cube.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-
-        glUniform3f(glGetUniformLocation(Cube.Program, "objectColor"), cubeColor.x, cubeColor.y, cubeColor.z);
-        glUniform3f(glGetUniformLocation(Cube.Program, "lightColor"), 1.0f, 0.5f, 0.5f);
-        glUniform3f(glGetUniformLocation(Cube.Program, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
-
-
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
-        model = glm::scale(model, glm::vec3(0.2f));
-
-        
-        Light.Use();
-        glUniformMatrix4fv(glGetUniformLocation(Light.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(Light.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(Light.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-
-
-       //draw skybox
         skybox.Draw();
-
-        // billboard
+        blueCube.Draw();
         AmongUs.Draw();
-        
-        // window
         Window.Draw();
-
-        //gluSphere()
-
-        // SMOKE 
         cloud.Draw();
         
         //glEnable(GL_RASTERIZER_DISCARD);
@@ -1059,10 +1001,6 @@ int main()
         glfwSwapBuffers(window);
     }
     
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteBuffers(1, &cubeVBO);
-    glDeleteVertexArrays(1, &lightVAO);
-    glDeleteBuffers(1, &lightVBO);
     glfwTerminate();
     return 0;
 }
