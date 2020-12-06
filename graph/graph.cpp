@@ -294,10 +294,12 @@ static void glfwError(int id, const char* description)
 }
 
 class Skybox {
-public:
+
     GLuint skyboxVAO, skyboxVBO;
     GLuint cubemapTexture;
     Shader shader = Shader("shaders/skybox.vs", "shaders/skybox.fs");
+
+public:
 
     Skybox() {
         // skybox VAO
@@ -351,6 +353,72 @@ public:
         glDeleteBuffers(1, &skyboxVBO);
     }
 };
+
+
+class Billboard {
+    GLuint billboardVAO, billboardVBO;
+    GLuint billboardTexture;
+    Shader shader = Shader("shaders/billboard.vs", "shaders/billboard.fs");
+public:
+    Billboard() {
+        glGenVertexArrays(1, &billboardVAO);
+        glGenBuffers(1, &billboardVBO);
+        glBindVertexArray(billboardVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, billboardVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(billboardVertices), &billboardVertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        glBindVertexArray(0);
+        //Shader Billboard("shaders/billboard.vs", "shaders/billboard.fs");
+
+        billboardTexture = loadTexture("textures/amongus_red.png");
+    }
+
+    void Draw() {
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+
+        glBindTexture(GL_TEXTURE_2D, billboardTexture);
+        glUniform1i(glGetUniformLocation(shader.Program, "ourTexture"), 1);
+        shader.Use();
+        glUniform1f(glGetUniformLocation(shader.Program, "size"), 0.4f);
+
+        for (int i = 0, n = billboards.size(); i + 1 < n; i++) {
+            for (int j = i; j < n; j++) {
+                glm::vec3 delta1 = billboards[i] - camera.Position;
+                glm::vec3 delta2 = billboards[j] - camera.Position;
+                if (dot(delta1, delta1) < dot(delta2, delta2)) {
+                    glm::vec3 tmp = billboards[i];
+                    billboards[i] = billboards[j];
+                    billboards[j] = tmp;
+                }
+            }
+        }
+
+        glm::mat4 PV = projection * view;
+
+        shader.setMat4("PVM", PV);
+        shader.setVec3("cameraRight", camera.Right);
+        shader.setVec3("cameraUp", camera.Up);
+        glBindVertexArray(billboardVAO);
+
+        // draw billboards
+        for (int i = 0, n = billboards.size(); i < n; i++) {
+            shader.setVec3("billboardPos", billboards[i]);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        glBindVertexArray(0);
+    }
+
+    ~Billboard() {
+        glDeleteVertexArrays(1, &billboardVAO);
+        glDeleteBuffers(1, &billboardVBO);
+    }
+};
+
 
 int main()
 {
@@ -497,22 +565,7 @@ int main()
    
 
     /**************** BILLBOARD *******************/
-    GLuint billboardVAO, billboardVBO;
-
-    glGenVertexArrays(1, &billboardVAO);
-    glGenBuffers(1, &billboardVBO);
-    glBindVertexArray(billboardVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, billboardVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(billboardVertices), &billboardVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-    glBindVertexArray(0);
-    Shader Billboard("shaders/billboard.vs", "shaders/billboard.fs");
-
-    GLuint billboardTexture = loadTexture("textures/amongus_red.png");
+    Billboard AmongUs;
 
     // transparent VAO
     unsigned int transparentVAO, transparentVBO;
@@ -846,40 +899,8 @@ int main()
        //draw skybox
         skybox.Draw();
 
-
         // billboard
-        view = camera.GetViewMatrix();
-        glBindTexture(GL_TEXTURE_2D, billboardTexture);
-        glUniform1i(glGetUniformLocation(Billboard.Program, "ourTexture"), 1);
-        Billboard.Use();
-        glUniform1f(glGetUniformLocation(Billboard.Program, "size"), 0.4f);
-        
-        
-        for (int i = 0, n = billboards.size(); i + 1 < n; i++) {
-            for (int j = i; j < n; j++) {
-                glm::vec3 delta1 = billboards[i] - camera.Position;
-                glm::vec3 delta2 = billboards[j] - camera.Position;
-                if (dot(delta1, delta1) < dot(delta2, delta2)) {
-                    glm::vec3 tmp = billboards[i];
-                    billboards[i] = billboards[j];
-                    billboards[j] = tmp;
-                }
-            }
-        }
-       
-        glm::mat4 PV = projection * view;
-
-        Billboard.setMat4("PVM", PV);
-        Billboard.setVec3("cameraRight", camera.Right);
-        Billboard.setVec3("cameraUp", camera.Up);
-        glBindVertexArray(billboardVAO);
-
-        // draw billboards
-        for (int i = 0, n = billboards.size(); i < n; i++) {
-            Billboard.setVec3("billboardPos", billboards[i]);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
-        glBindVertexArray(0);
+        AmongUs.Draw();
         
         view = camera.GetViewMatrix();
 
@@ -1013,8 +1034,6 @@ int main()
     glDeleteBuffers(1, &lightVBO);
     glDeleteVertexArrays(1, &transparentVAO);
     glDeleteBuffers(1, &transparentVBO);
-    glDeleteVertexArrays(1, &billboardVAO);
-    glDeleteBuffers(1, &billboardVBO);
     delete[] data;
     delete[] tdata;
     glDeleteBuffers(1, &initVel);   
