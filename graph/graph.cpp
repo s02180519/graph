@@ -484,6 +484,117 @@ public:
         glDeleteVertexArrays(1, &transparentVAO);
         glDeleteBuffers(1, &transparentVBO);
     }
+};
+
+
+class Plane {
+    GLuint planeVAO, planeVBO;
+    GLuint textureSnow;
+    Shader shader = Shader("shaders/plane.vs", "shaders/plane.fs");
+public:
+    Plane() {
+        glGenVertexArrays(1, &planeVAO);
+        glGenBuffers(1, &planeVBO);
+        glBindVertexArray(planeVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(plane), plane, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(2);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
+        glBindVertexArray(0);
+
+        //Shader Plane = Shader("shaders/plane.vs", "shaders/plane.fs");
+        textureSnow = loadTexture("textures/ice.jpg");
+    }
+
+    void Draw() {
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+        glm::mat4 model(1.0f);
+
+        glBindTexture(GL_TEXTURE_2D, textureSnow);
+        glUniform1i(glGetUniformLocation(shader.Program, "ourTexture"), 0);
+
+        shader.Use();
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glBindVertexArray(planeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+    }
+
+    ~Plane() {
+        glDeleteVertexArrays(1, &planeVAO);
+        glDeleteBuffers(1, &planeVBO);
+    }
+};
+
+class Star {
+    GLuint starVAO, starVBO;
+    Shader shader = Shader("shaders/star.vs", "shaders/star.fs");
+
+public:
+    Star() {
+        glGenVertexArrays(1, &starVAO);
+        glGenBuffers(1, &starVBO);
+        glBindVertexArray(starVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, starVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(star_vert), star_vert, GL_STATIC_DRAW);
+
+        // Position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        glBindVertexArray(0);
+    }
+
+    void Draw() {
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+        glm::mat4 model(1.0f);
+        shader.Use();
+        
+        shader.setMat4("model", model);
+        shader.setMat4("projection", projection);
+        shader.setMat4("view", view);
+
+        GLfloat greenValue = (sin(glfwGetTime()) / 2) + 0.5f;
+        GLfloat redValue = (sin(glfwGetTime()) / 2) + 0.5f;
+        GLint vertexColorLocation = glGetUniformLocation(shader.Program, "ourColor");
+        glUniform3f(vertexColorLocation, redValue, greenValue, 1.0f);
+
+        glBindVertexArray(starVAO);
+
+        glm::vec3 cubePositions[] = {
+            glm::vec3(0.0f,  10.0f,  0.0f),
+            glm::vec3(6.0f,  10.0f, 0.0f),
+            glm::vec3(1.0f,  10.0f,  -3.0f),
+            glm::vec3(4.7f,  10.0f,  -3.0f),
+            glm::vec3(-3.0f,  10.0f,  2.0f),
+            glm::vec3(-6.0f,  10.0f, 4.0f),
+            glm::vec3(-11.0f,  10.0f,  4.0f),
+        };
+        for (GLuint i = 0; i < 7; i++)
+        {
+            glm::mat4 model(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            shader.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 24);
+        }
+        glBindVertexArray(0);
+    }
+
+    ~Star() {
+        glDeleteVertexArrays(1, &starVAO);
+        glDeleteBuffers(1, &starVBO);
+    }
 
 };
 
@@ -550,52 +661,13 @@ int main()
     /***************** SQUARE *********************/
 
     //GLuint textureCoal = loadTexture("textures/coal.jpg");
-    GLuint textureSnow = loadTexture("textures/ice.jpg");
 
-    GLuint EBO, starVAO, starVBO, planeVAO, planeVBO;
-    glGenVertexArrays(1, &starVAO);
-    glGenBuffers(1, &starVBO);
-    //glGenBuffers(1, &EBO);
-    glBindVertexArray(starVAO);
-    //glBindVertexArray(planeVAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, starVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(star_vert), star_vert, GL_STATIC_DRAW);
-
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    // Color attribute
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    //glEnableVertexAttribArray(1);
-    // TexCoord attribute
-    //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    //glEnableVertexAttribArray(2);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-
-    glBindVertexArray(0);
-
-    Shader Star = Shader("shaders/star.vs", "shaders/star.fs");
-
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane), plane, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-    glBindVertexArray(0);
-
-    Shader Plane = Shader("shaders/plane.vs", "shaders/plane.fs");
+    // star
+    Star bear;
+    
+    // plane
+    Plane ice;
 
     /****************** LIGHTING **********************/
 
@@ -612,8 +684,6 @@ int main()
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
     
-
-
     glGenVertexArrays(1, &lightVAO);
     glGenBuffers(1, &lightVBO);
     glBindVertexArray(lightVAO);
@@ -858,60 +928,12 @@ int main()
         projection = glm::perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
         //glActiveTexture(GL_TEXTURE0);
         glm::mat4 model = glm::mat4(1.0f);
+
+        // ice
+        ice.Draw();
         
-        
-       glBindTexture(GL_TEXTURE_2D, textureSnow);
-       glUniform1i(glGetUniformLocation(Plane.Program, "ourTexture"), 0);
-
-        Plane.Use();
-       glUniformMatrix4fv(glGetUniformLocation(Plane.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-       glUniformMatrix4fv(glGetUniformLocation(Plane.Program, "model") , 1, GL_FALSE, glm::value_ptr(model));
-       glUniformMatrix4fv(glGetUniformLocation(Plane.Program, "projection") , 1, GL_FALSE, glm::value_ptr(projection));
-       glBindVertexArray(planeVAO);
-       glDrawArrays(GL_TRIANGLES, 0, 6);
-       glBindVertexArray(0);
-       
-        
-        Star.Use();
-        glm::mat4 transform = glm::mat4(1.0f);
-        
-        GLint modelLoc = glGetUniformLocation(Star.Program, "model");
-       glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-        GLint viewLoc = glGetUniformLocation(Star.Program, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-        GLint projectionLoc = glGetUniformLocation(Star.Program, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-        GLfloat greenValue = (sin(glfwGetTime()) / 2) + 0.5f;
-        GLfloat redValue = (sin(glfwGetTime()) / 2) + 0.5f;
-        GLint vertexColorLocation = glGetUniformLocation(Star.Program, "ourColor");
-        glUniform3f(vertexColorLocation, redValue, greenValue, 1.0f);
-
-        glBindVertexArray(starVAO);
-
-        glm::vec3 cubePositions[] = {
-            glm::vec3(0.0f,  10.0f,  0.0f),
-            glm::vec3(6.0f,  10.0f, 0.0f),
-            glm::vec3(1.0f,  10.0f,  -3.0f),
-            glm::vec3(4.7f,  10.0f,  -3.0f),
-            glm::vec3(-3.0f,  10.0f,  2.0f),
-            glm::vec3(-6.0f,  10.0f, 4.0f),
-            glm::vec3(-11.0f,  10.0f,  4.0f),
-        };
-        for (GLuint i = 0; i < 7; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            GLfloat angle = 20.0f * i;
-            //model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-            glDrawArrays(GL_TRIANGLES, 0, 24);
-        }
-        //glBindVertexArray(0);
-        glBindVertexArray(0);
+        // star
+        bear.Draw();
 
         /*********************** LIGHTING *************************/
         glm::vec3 cubeColor(0.0f, 0.0f, 1.0f);
@@ -1047,10 +1069,6 @@ int main()
         glfwSwapBuffers(window);
     }
     
-    glDeleteVertexArrays(1, &starVAO);
-    glDeleteBuffers(1, &starVBO);
-    glDeleteVertexArrays(1, &planeVAO);
-    glDeleteBuffers(1, &planeVBO);
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteBuffers(1, &cubeVBO);
     glDeleteVertexArrays(1, &lightVAO);
