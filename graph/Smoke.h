@@ -1,44 +1,19 @@
+#ifndef SHADER_H
+#define SHADER_H
+
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "ShaderSmoke.h"
+#include "Load.h"
+#include "Camera.h"
+
 #define WIDTH 800
 #define HEIGHT 600
 
-//#include "graph.cpp"
-
-/*
-GLuint loadTextures(char const* path) {
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-
-    int width, height, nrComponents;
-    stbi_uc* data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        switch (nrComponents) {
-        case 1: format = GL_RED; break;
-        case 3: format = GL_RGB; break;
-        case 4: format = GL_RGBA; break;
-        default: format = 0;
-        }
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    }
-    else std::cout << "Failed to load texture:" << std::endl << path << std::endl;
-
-    stbi_image_free(data);
-
-    return textureID;
-}
-
-*/
-//Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-//float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 class Smoke {
     GLuint posBuf[2], velBuf[2];
@@ -263,3 +238,5 @@ public:
         //glDeleteVertexArrays(1, &particles);
     }
 };
+
+#endif

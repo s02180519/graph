@@ -7,14 +7,14 @@ layout (location = 1) in vec3 VertexVelocity;
 layout (location = 2) in float VertexStartTime;
 layout (location = 3) in vec3 VertexInitialVelocity;
 
-out vec3 Position;   // To transform feedback
-out vec3 Velocity;   // To transform feedback
-out float StartTime; // To transform feedback
-out float Transp;    // To fragment shader
+out vec3 Position;   // transform feedback
+out vec3 Velocity;   // transform feedback
+out float StartTime; // transform feedback
+out float Transp;    // fragment shader
 
-uniform float Time;  // Simulation time
-uniform float H;     // Elapsed time between frames
-uniform vec3 Accel;  // Particle acceleration
+uniform float Time;  
+uniform float H;     // time between frames
+uniform vec3 Accel;  // particle acceleration
 uniform float ParticleLifetime;  
 uniform float MinParticleSize;
 uniform float MaxParticleSize;
@@ -23,8 +23,7 @@ uniform mat4 MVP;
 
 subroutine (RenderPassType)
 void update() {
-
-    // Update position & velocity for next frame
+    // update position & velocity 
     Position = VertexPosition;
     Velocity = VertexVelocity;
     StartTime = VertexStartTime;
@@ -34,12 +33,12 @@ void update() {
         float age = Time - StartTime;
 
         if( age > ParticleLifetime ) {
-            // The particle is past it's lifetime, recycle.
+            // particle is past it's lifetime, recycle
             Position = vec3(0.0);
             Velocity = VertexInitialVelocity;
             StartTime = Time;
         } else {
-            // The particle is alive, update.
+            // particle is alive, update
             Position += Velocity * H;
             Velocity += Accel * H;
         }
@@ -60,6 +59,6 @@ void render() {
 
 void main()
 {
-    // This will call either render() or update()
+    // call render() or update()
     RenderPass();
 }

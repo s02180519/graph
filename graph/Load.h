@@ -65,4 +65,8 @@ GLuint loadCubemap(std::vector<std::string> faces) {
     return textureID;
 }
 
+float randFloat() {
+    return ((float)rand() / RAND_MAX);
+}
+
 #endif
