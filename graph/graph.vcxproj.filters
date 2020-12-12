@@ -15,17 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="graph.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="learn1_murcube.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="learn_coals.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Shader.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -43,17 +32,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\square.fs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="shaders\square.vs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="shaders\triangle.fs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
-    <None Include="shaders\triangle.vs">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
+    <ClCompile Include="main.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

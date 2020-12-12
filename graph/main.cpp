@@ -200,6 +200,24 @@ class Skybox {
     GLuint cubemapTexture;
     Shader shader = Shader("shaders/skybox.vs", "shaders/skybox.fs");
 
+    std::vector<std::string> faces
+    {
+        "textures/IceLake/posx.jpg",
+        "textures/IceLake/negx.jpg",
+        "textures/IceLake/posy.jpg",
+        "textures/IceLake/negy.jpg",
+        "textures/IceLake/posz.jpg",
+        "textures/IceLake/negz.jpg"
+        /*
+        "textures/wow.jpg",
+        "textures/wow.jpg",
+        "textures/wow.jpg",
+        "textures/wow.jpg",
+        "textures/wow.jpg",
+        "textures/wow.jpg"
+        */
+    };
+
 public:
 
     Skybox() {
@@ -215,15 +233,6 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, 0); 
         glBindVertexArray(0);
 
-        std::vector<std::string> faces
-        {
-            "textures/IceLake/posx.jpg",
-            "textures/IceLake/negx.jpg",
-            "textures/IceLake/posy.jpg",
-            "textures/IceLake/negy.jpg",
-            "textures/IceLake/posz.jpg",
-            "textures/IceLake/negz.jpg"
-        };
         cubemapTexture = loadCubemap(faces);
     }
 
@@ -442,13 +451,13 @@ public:
         glBindVertexArray(starVAO);
 
         glm::vec3 cubePositions[] = {
-            glm::vec3(0.0f,  10.0f,  0.0f),
-            glm::vec3(6.0f,  10.0f, 0.0f),
-            glm::vec3(1.0f,  10.0f,  -3.0f),
-            glm::vec3(4.7f,  10.0f,  -3.0f),
-            glm::vec3(-3.0f,  10.0f,  2.0f),
-            glm::vec3(-6.0f,  10.0f, 4.0f),
-            glm::vec3(-11.0f,  10.0f,  4.0f),
+            glm::vec3(0.0f,  17.0f,  0.0f),
+            glm::vec3(6.0f,  17.0f, 0.0f),
+            glm::vec3(1.0f,  17.0f,  -3.0f),
+            glm::vec3(4.7f,  17.0f,  -3.0f),
+            glm::vec3(-3.0f,  17.0f,  2.0f),
+            glm::vec3(-6.0f,  17.0f, 4.0f),
+            glm::vec3(-11.0f,  17.0f,  4.0f),
         };
         for (GLuint i = 0; i < 7; i++)
         {

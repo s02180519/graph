@@ -151,9 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="graph.cpp" />
-    <ClCompile Include="learn1_murcube.cpp" />
-    <ClCompile Include="learn_coals.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -161,12 +159,6 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderSmoke.h" />
     <ClInclude Include="Smoke.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\square.fs" />
-    <None Include="shaders\square.vs" />
-    <None Include="shaders\triangle.fs" />
-    <None Include="shaders\triangle.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
