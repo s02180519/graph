@@ -874,7 +874,6 @@ public:
     }
 };
 
-
 int main()
 {
     int width = 1600;
