@@ -874,6 +874,63 @@ public:
     }
 };
 
+class Cube {
+    Shader shader = Shader("shaders/refract.vs", "shaders/refract.fs");
+    GLuint cubeVAO, cubeVBO;
+    GLuint cubemapTexture;
+
+    std::vector<std::string> faces
+    {
+        "textures/IceLake/posx.jpg",
+        "textures/IceLake/negx.jpg",
+        "textures/IceLake/posy.jpg",
+        "textures/IceLake/negy.jpg",
+        "textures/IceLake/posz.jpg",
+        "textures/IceLake/negz.jpg"
+    };
+public:
+    Cube() {
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &cubeVBO);
+        glBindVertexArray(cubeVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        
+        cubemapTexture = loadCubemap(faces);
+    }
+
+    void Draw() {
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+        glm::mat4 model(1.0f);
+        shader.Use();
+        shader.setInt("skybox", 0);
+
+        shader.setMat4("model", model);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
+        shader.setVec3("camPos", camera.Position);
+        
+        glBindVertexArray(cubeVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+    }
+
+    ~Cube() {
+        glDeleteVertexArrays(1, &cubeVAO);
+        glDeleteBuffers(1, &cubeVBO);
+    }
+};
+
+float keyTime = 0.0f;
+bool refractMode = false;
+
 int main()
 {
     int width = 1600;
@@ -911,6 +968,7 @@ int main()
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
    
+    Cube refractCube;
     Skybox skybox;
     Star bear;
     Billboard AmongUs;
@@ -938,14 +996,28 @@ int main()
         glEnable(GL_DEPTH_TEST);
 
         // draw here
+        if (refractMode) {
+            if (keys[32] && (glfwGetTime() - keyTime) > 1.0) {
+                keyTime = glfwGetTime();
+                refractMode = false;
+            }
+            refractCube.Draw();
+            skybox.Draw();
+        }
+        else {
+            if (keys[32] && (glfwGetTime() - keyTime) > 1.0) {
+                keyTime = glfwGetTime();
+                refractMode = true;
+            }
+            planeAndCubes.Draw();
+            bear.Draw();
+            //refractCube.Draw();
+            skybox.Draw();
+            AmongUs.Draw();
+            Window.Draw();
+            cloud.Draw();
+        }
 
-        planeAndCubes.Draw();
-        bear.Draw();
-        skybox.Draw();
-        AmongUs.Draw();
-        Window.Draw();
-        cloud.Draw();
-        
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
         // then swap buffers
         glfwSwapBuffers(window);
