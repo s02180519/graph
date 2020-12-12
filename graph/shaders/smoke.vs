@@ -28,16 +28,18 @@ void update() {
     Velocity = VertexVelocity;
     StartTime = VertexStartTime;
 
-    if( Time >= StartTime ) {
+    if (Time >= StartTime) {
 
         float age = Time - StartTime;
 
-        if( age > ParticleLifetime ) {
+        if (age > ParticleLifetime) {
+
             // particle is past it's lifetime, recycle
             Position = vec3(0.0);
             Velocity = VertexInitialVelocity;
             StartTime = Time;
         } else {
+
             // particle is alive, update
             Position += Velocity * H;
             Velocity += Accel * H;

@@ -13,17 +13,15 @@
 #include "Load.h"
 
 #include <vector>
-#include <map>
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 1600
+#define HEIGHT 1200
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void Do_Movement();
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 6.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = false;
@@ -33,15 +31,7 @@ GLfloat lastFrame = 0.0f;
 
 GLfloat T = 0.0f;
 
-GLfloat square_vert[] = {
-    // Позиции            // Цвета            // Текстурные координаты
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Верхний правый
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Нижний правый
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Нижний левый
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Верхний левый
-};
-
-GLfloat star_vert[] = {
+GLfloat starVertices[] = {
         0.0f,  0.5f,  0.0f, 
         0.0f,  0.0f,  0.5f,
         0.5f,  0.0f,  0.0f,
@@ -58,7 +48,7 @@ GLfloat star_vert[] = {
         0.0f,  0.0f, -0.5f,
        -0.5f,  0.0f,  0.0f,
 
-        0.0f,  -0.5f,  0.0f,
+        0.0f, -0.5f,  0.0f,
         0.0f,  0.0f,  0.5f,
         0.5f,  0.0f,  0.0f,
 
@@ -75,61 +65,8 @@ GLfloat star_vert[] = {
        -0.5f,  0.0f,  0.0f,
 };
 
-GLfloat cube_vert[] = {
-       -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-};
-
-GLfloat plane[] = {
-    -18, 0, -18,   0,   0,  
-     18, 0,  18,   1, 1,  
-     18, 0, -18,   1,  0,  
-     18, 0,  18,   1,  1,  
-    -18, 0, -18,   0,   0,  
-    -18, 0,  18,   0,  1, 
-};
-
-float planeVertices[] = {
-    // positions            // normals         // texcoords
+GLfloat planeVertices[] = {
+    // positions            // normals         // texture
      10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   5.0f,  0.0f,
     -10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
     -10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  5.0f,
@@ -139,52 +76,52 @@ float planeVertices[] = {
      10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   5.0f,  5.0f
 };
 
-float vertices[] = {
-    // back face
-    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-     1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-     1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-     1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-    -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-    // front face
-    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-     1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-     1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-     1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-    -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-    // left face
-    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-    -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-    // right face
-     1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-     1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-     1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-     1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-    // bottom face
-    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-     1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-    -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-    // top face
-    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-     1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-     1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-     1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+GLfloat cubeVertices[] = {
+    // positions            // normals             // texture
+    -1.0f, -1.0f, -1.0f,    0.0f,  0.0f, -1.0f,    0.0f, 0.0f, 
+     1.0f,  1.0f, -1.0f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f, 
+     1.0f, -1.0f, -1.0f,    0.0f,  0.0f, -1.0f,    1.0f, 0.0f,         
+     1.0f,  1.0f, -1.0f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f, 
+    -1.0f, -1.0f, -1.0f,    0.0f,  0.0f, -1.0f,    0.0f, 0.0f, 
+    -1.0f,  1.0f, -1.0f,    0.0f,  0.0f, -1.0f,    0.0f, 1.0f, 
+
+    -1.0f, -1.0f,  1.0f,    0.0f,  0.0f,  1.0f,    0.0f, 0.0f, 
+     1.0f, -1.0f,  1.0f,    0.0f,  0.0f,  1.0f,    1.0f, 0.0f, 
+     1.0f,  1.0f,  1.0f,    0.0f,  0.0f,  1.0f,    1.0f, 1.0f, 
+     1.0f,  1.0f,  1.0f,    0.0f,  0.0f,  1.0f,    1.0f, 1.0f, 
+    -1.0f,  1.0f,  1.0f,    0.0f,  0.0f,  1.0f,    0.0f, 1.0f, 
+    -1.0f, -1.0f,  1.0f,    0.0f,  0.0f,  1.0f,    0.0f, 0.0f, 
+ 
+    -1.0f,  1.0f,  1.0f,   -1.0f,  0.0f,  0.0f,    1.0f, 0.0f, 
+    -1.0f,  1.0f, -1.0f,   -1.0f,  0.0f,  0.0f,    1.0f, 1.0f, 
+    -1.0f, -1.0f, -1.0f,   -1.0f,  0.0f,  0.0f,    0.0f, 1.0f, 
+    -1.0f, -1.0f, -1.0f,   -1.0f,  0.0f,  0.0f,    0.0f, 1.0f, 
+    -1.0f, -1.0f,  1.0f,   -1.0f,  0.0f,  0.0f,    0.0f, 0.0f, 
+    -1.0f,  1.0f,  1.0f,   -1.0f,  0.0f,  0.0f,    1.0f, 0.0f, 
+  
+     1.0f,  1.0f,  1.0f,    1.0f,  0.0f,  0.0f,    1.0f, 0.0f, 
+     1.0f, -1.0f, -1.0f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f,
+     1.0f,  1.0f, -1.0f,    1.0f,  0.0f,  0.0f,    1.0f, 1.0f,        
+     1.0f, -1.0f, -1.0f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f, 
+     1.0f,  1.0f,  1.0f,    1.0f,  0.0f,  0.0f,    1.0f, 0.0f, 
+     1.0f, -1.0f,  1.0f,    1.0f,  0.0f,  0.0f,    0.0f, 0.0f,     
+  
+    -1.0f, -1.0f, -1.0f,    0.0f, -1.0f,  0.0f,    0.0f, 1.0f, 
+     1.0f, -1.0f, -1.0f,    0.0f, -1.0f,  0.0f,    1.0f, 1.0f, 
+     1.0f, -1.0f,  1.0f,    0.0f, -1.0f,  0.0f,    1.0f, 0.0f, 
+     1.0f, -1.0f,  1.0f,    0.0f, -1.0f,  0.0f,    1.0f, 0.0f, 
+    -1.0f, -1.0f,  1.0f,    0.0f, -1.0f,  0.0f,    0.0f, 0.0f, 
+    -1.0f, -1.0f, -1.0f,    0.0f, -1.0f,  0.0f,    0.0f, 1.0f, 
+   
+    -1.0f,  1.0f, -1.0f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f, 
+     1.0f,  1.0f , 1.0f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f,  
+     1.0f,  1.0f, -1.0f,    0.0f,  1.0f,  0.0f,    1.0f, 1.0f,       
+     1.0f,  1.0f,  1.0f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f,  
+    -1.0f,  1.0f, -1.0f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f,  
+    -1.0f,  1.0f,  1.0f,    0.0f,  1.0f,  0.0f,    0.0f, 0.0f           
 };
 
-float skyboxVertices[] = {
+GLfloat skyboxVertices[] = {
     // positions          
     -1.0f,  1.0f, -1.0f,
     -1.0f, -1.0f, -1.0f,
@@ -230,23 +167,17 @@ float skyboxVertices[] = {
 };
 
 GLfloat billboardVertices[] = {
-     -1, -1, 0,   0, 1,
-      1, -1, 0,   1, 1,
-     -1,  1, 0,   0, 0,
-      1, -1, 0,   1, 1,
-      1,  1, 0,   1, 0,
-     -1,  1, 0,   0, 0
+      // position   // texture
+     -1, -1, 0,     0, 1,
+      1, -1, 0,     1, 1,
+     -1,  1, 0,     0, 0,
+      1, -1, 0,     1, 1,
+      1,  1, 0,     1, 0,
+     -1,  1, 0,     0, 0
 };
 
-std::vector<glm::vec3> billboards = {
-        glm::vec3(-1.0f, 1.0f, -4.0f),
-        //glm::vec3(-1.0f, 0.5f, -4.0f),
-        glm::vec3(-2.0f, 1.0f, -4.0f),
-        glm::vec3(-3.0f, 1.0f, -4.0f)
-};
-
-float transparentVertices[] = {
-    // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+GLfloat transparentVertices[] = {
+    // positions         // texture 
     0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
     0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
@@ -273,17 +204,16 @@ public:
 
     Skybox() {
         // skybox VAO
-        //GLuint skyboxVAO, skyboxVBO;
         glGenVertexArrays(1, &skyboxVAO);
         glGenBuffers(1, &skyboxVBO);
         glBindVertexArray(skyboxVAO);
         glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
         glBindVertexArray(0);
-        //shader = Shader("shaders/skybox.vs", "shaders/skybox.fs");
 
         std::vector<std::string> faces
         {
@@ -298,21 +228,22 @@ public:
     }
 
     void Draw() {
-        // draw skybox
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        // depth. we need background
+        glDepthFunc(GL_LEQUAL);  
+
+        // texture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "ourTexture"), 0);
         shader.Use();
-        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // background
         glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
 
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        // skybox cube
+        
+        // cube
         glBindVertexArray(skyboxVAO);
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
@@ -483,7 +414,7 @@ public:
         glGenBuffers(1, &starVBO);
         glBindVertexArray(starVAO);
         glBindBuffer(GL_ARRAY_BUFFER, starVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(star_vert), star_vert, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(starVertices), starVertices, GL_STATIC_DRAW);
 
         // Position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
@@ -703,7 +634,7 @@ public:
         shader.setFloat("ParticleLifetime", 10.0f);
         glm::vec3 Accel(0.0f, 0.1f, 0.0f);
         shader.setVec3("Accel", Accel);
-        shader.setFloat("MinParticleSize", 10.0f);
+        shader.setFloat("MinParticleSize", 20.0f);
         shader.setFloat("MaxParticleSize", 500.0f);
         shader.setFloat("Time", glfwGetTime());
         shader.setFloat("H", glfwGetTime() - T);
@@ -747,57 +678,6 @@ public:
         glDeleteBuffers(2, posBuf);
         glDeleteBuffers(2, velBuf);    
         glDeleteBuffers(2, startTime);
-    }
-};
-
-class Cube {
-    GLuint cubeVAO, cubeVBO;
-    Shader shader = Shader("shaders/square.vs", "shaders/square.fs");
-public:
-    Cube() {
-        glGenVertexArrays(1, &cubeVAO);
-        glGenBuffers(1, &cubeVBO);
-        glBindVertexArray(cubeVAO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vert), cube_vert, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(1);
-        glBindVertexArray(0);
-    }
-
-    void Draw() {
-        glm::vec3 cubeColor(0.0f, 0.0f, 1.0f);
-        glm::vec3 lightColor(1.0f, 0.5f, 0.5f);
-        glm::vec3 lightPos(1.0f, 1.0f, 1.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
-        glm::mat4 model(1.0f);
-
-        shader.Use();
-        glm::vec3 cubePos(1.0f, 1.0f, 0.0f);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePos);
-
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniform3f(glGetUniformLocation(shader.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-
-        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"), cubeColor.x, cubeColor.y, cubeColor.z);
-        glUniform3f(glGetUniformLocation(shader.Program, "lightColor"), 1.0f, 0.5f, 0.5f);
-        glUniform3f(glGetUniformLocation(shader.Program, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
-
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-    }
-
-    ~Cube() {
-        glDeleteVertexArrays(1, &cubeVAO);
-        glDeleteBuffers(1, &cubeVBO);
     }
 };
 
@@ -859,7 +739,7 @@ public:
         glGenVertexArrays(1, &cubeVAO);
         glGenBuffers(1, &cubeVBO);
         glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
         glBindVertexArray(cubeVAO);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -997,8 +877,8 @@ public:
 
 int main()
 {
-    int width = 800;
-    int height = 600;
+    int width = 1600;
+    int height = 1200;
     glfwSetErrorCallback(&glfwError);
     glfwInit();
 
@@ -1018,7 +898,6 @@ int main()
     
     glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
 
     // Options
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -1033,38 +912,14 @@ int main()
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
    
-    ///////////////////////////////////////////////////
-
-    glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-    std::cout << vec.x << vec.y << vec.z << std::endl;
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-    vec = trans * vec;
-    std::cout << vec.x << vec.y << vec.z << std::endl;
-
-    glm::vec3 cubePos(1.0f, 1.0f, 0.0f);
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, cubePos);
-    glm::vec3 position(-0.5f, -0.5f, -0.5f);
-    glm::vec4 FragPos4 = model * glm::vec4(position, 1.0f);
-
-    std::cout << FragPos4.x << FragPos4.y << FragPos4.z << std::endl;
-
-    //////////////////////////////////////////////////
-
     Skybox skybox;
     Star bear;
-    //Plane ice;
-    //Cube blueCube;
     Billboard AmongUs;
     Transparent Window;
     Smoke cloud;
-
-    
-
     ShadowScene planeAndCubes;
     
-    // game cycle   
+    // play cycle   
     while (!glfwWindowShouldClose(window))     
     {
         // check events
@@ -1086,18 +941,12 @@ int main()
         // draw here
 
         planeAndCubes.Draw();
-        //ice.Draw();
         bear.Draw();
         skybox.Draw();
-        //blueCube.Draw();
-        //glEnable(GL_BLEND);
-        //glEnable(GL_DEPTH_TEST);
         AmongUs.Draw();
         Window.Draw();
         cloud.Draw();
-        //planeAndCubes.Draw();
         
-        //glEnable(GL_RASTERIZER_DISCARD);
         // we have 2 buffers (front back). we see front buffer when back buffer has been drowing
         // then swap buffers
         glfwSwapBuffers(window);
@@ -1151,10 +1000,4 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastY = ypos;
 
     camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(yoffset);
 }
